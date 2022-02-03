@@ -1,0 +1,19 @@
+{
+    "$schema": "schema.json",
+    "actions": [{
+            "verb": "setRegionalSettings",
+            "timeZone": 76,
+            "locale": 3081,
+            "sortOrder": 25
+        },
+        {
+            "verb": "setSiteBranding",
+            "navigationLayout": "Cascade",
+            "headerLayout": "Standard",
+            "headerBackground": "None",
+            "showFooter": false
+        }
+    ],
+    "bindata": {},
+    "version": 1
+}
