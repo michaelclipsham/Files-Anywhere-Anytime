@@ -69,7 +69,7 @@ function ProvisionFacultySiteCollection {
 		Write-Host "Start - Provisioning Site Permissions" -ForegroundColor Green
 		$sgVisitors = "$($SiteTitle) Visitors"
 		$sgMembers = "$($SiteTitle) Members"
-		#$sgOwners = "$($SiteTitle) Owners"
+		$sgOwners = "$($SiteTitle) Owners"
 
 		# Revoke access for Members group and assign Contribute permission level
 		Write-Host "Applying security to $($sgMembers)"
@@ -136,6 +136,11 @@ function ProvisionFacultySiteCollection {
 		ProvisionSiteCollectionAdmins $siteUrl "Cloud Migration Project Support"
 		ProvisionSiteCollectionAdmins $siteUrl $($schoolShortName + " - School.Principal")
 		ProvisionSiteCollectionAdmins $siteUrl $($schoolShortName + " - School.RelPrincipal") ##"~SCH$($schoolcode)SRP"
+
+		# Remove Project Support Group from Members group
+		RevokeFacultySiteCollectionPermission -SiteUrl $siteUrl -IdentityClaim "Cloud Migration Project Support" -Group $sgMembers -IsGroup $true
+		# Remove provisioning user from Owners group
+		RevokeFacultySiteCollectionPermission -SiteUrl $siteUrl -IdentityClaim $SiteOwner -Group $sgOwners -IsGroup $false
 
 		Write-Host "Complete - Provisioning Site Permissions" -ForegroundColor Green
 	}

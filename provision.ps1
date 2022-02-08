@@ -158,7 +158,7 @@ foreach ($row in $schoolsToProvisionFile) {
 	foreach ($facultySite in $facultySiteInfo) {
 		$schoolPrincipalADGroupMail = "~SCH"+$schoolCode+"SP@det.nsw.edu.au"
 		$facultySiteUrl = "$($SITEROOTURL)/$MANAGEDPATH/$schoolCode-$($facultySite.Url)"
-		SetSiteCollectionOwner -SiteUrl $facultySiteUrl -OwnerUPN $schoolPrincipalADGroupMail 
+		SetSiteCollectionOwner -SiteUrl $facultySiteUrl -OwnerClaim $schoolPrincipalADGroupMail
 	}
 	
 	AddAuditLog -RunId $runId -shortName $schoolShortName -code $schoolCode -eventMessage "Provisioning Run Completed"

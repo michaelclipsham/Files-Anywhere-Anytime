@@ -157,8 +157,41 @@ function SetSiteCollectionOwner() {
 
 	try {
 		Set-SPOSite -Identity $SiteUrl -Owner $OwnerClaim
+		Write-Host "Set $($OwnerClaim) as Owner of $($SiteUrl)"
 	}
 	catch {
 		Write-Warning "Adding '$($OwnerClaim)' as Site Collection Owner failed. Error: $($Error[0])"
+	}
+}
+
+function RevokeFacultySiteCollectionPermission () {
+	param(
+		[Parameter(Mandatory)]
+		[String]
+		$SiteUrl,
+		[Parameter(Mandatory)]
+		[String]
+		$IdentityClaim,
+		[Parameter(Mandatory)]
+		[String]
+		$Group,
+		[Parameter(Mandatory)]
+		[bool]
+		$IsGroup
+	)
+	
+	try {
+		if ($IsGroup) {
+			$adGroup = GetADSecurityGroup -DisplayName $IdentityClaim
+			$loginName = "c:0t`.c`|tenant`|$($adGroup.LoginName)"
+			Remove-SPOUser -Site $SiteUrl -LoginName $loginName -Group $Group
+		}
+		else {
+			Remove-SPOUser -Site $SiteUrl -LoginName $IdentityClaim -Group $Group
+		}
+		Write-Host "Removed $($IdentityClaim) from $($Group) in $($SiteUrl)"
+	}
+	catch {
+		Write-Warning "Revoking $($IdentityClaim) from $($Group) in $(SiteUrl) failed. Error: $($Error[0])"
 	}
 }
