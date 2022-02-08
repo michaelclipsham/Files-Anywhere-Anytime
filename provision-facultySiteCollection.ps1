@@ -139,7 +139,7 @@ function ProvisionFacultySiteCollection {
 
 		# Remove Project Support Group from Members group
 		RevokeFacultySiteCollectionPermission -SiteUrl $siteUrl -IdentityClaim "Cloud Migration Project Support" -Group $sgMembers -IsGroup $true
-		# Remove provisioning user from Owners group
+		# Remove provisioning user from Owners group, which also strangely does site collection admin at the same time
 		RevokeFacultySiteCollectionPermission -SiteUrl $siteUrl -IdentityClaim $SiteOwner -Group $sgOwners -IsGroup $false
 
 		Write-Host "Complete - Provisioning Site Permissions" -ForegroundColor Green
