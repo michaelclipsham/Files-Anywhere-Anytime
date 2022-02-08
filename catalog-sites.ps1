@@ -65,6 +65,6 @@ function CatalogCreatedSitesForSchool() {
     $newItemBody += '    "Local2": "' +    $SchoolUrls["Local2"]    + '",';
     $newItemBody += '    "Teacher": "' +   $SchoolUrls["Teacher"]   + '"';
     $newItemBody += '}';
-    Invoke-RestMethod -Uri "$($CatalogSiteUrl)/_api/lists/GetByTitle(`'$CatalogListName`')/Items" -Method Post -Headers $headers -Body $newItemBody
+    Invoke-RestMethod -Uri "$($CatalogSiteUrl)/_api/lists/GetByTitle(`'$CatalogListName`')/Items" -Method Post -Headers $headers -Body $newItemBody | Out-Null
     Write-Host "Created catalog record for $($SchoolShortName)"
 }

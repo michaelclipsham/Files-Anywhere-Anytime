@@ -48,7 +48,13 @@ function ProvisionFacultySiteCollection {
 		[String]
 		$TeamSiteAlias,
 		[Parameter(Mandatory)]
-		$SiteDesign
+		$SiteDesign,
+		[Param(Mandatory)]
+		[String]
+		$SchoolCode,
+		[Param(Mandatory)]
+		[String]
+		$SchoolShortName
 	)
 	try {
 		#Apply Site Design
@@ -129,8 +135,8 @@ function ProvisionFacultySiteCollection {
 		# Add Security Groups to Site Collection Administrator
 		Start-Sleep -Milliseconds 2000 # Just pausing for effect... nah kidding, there might need to be a short delay to allow the SPOUser object be created
 		ProvisionSiteCollectionAdmins $siteUrl "Cloud Migration Project Support"
-		ProvisionSiteCollectionAdmins $siteUrl "~SCH$($schoolcode)SP"
-		ProvisionSiteCollectionAdmins $siteUrl "~SCH$($schoolcode)SRP"
+		ProvisionSiteCollectionAdmins $siteUrl $($schoolShortName + " - School.Principal")
+		ProvisionSiteCollectionAdmins $siteUrl $($schoolShortName + " - School.RelPrincipal") ##"~SCH$($schoolcode)SRP"
 
 		Write-Host "Complete - Provisioning Site Permissions" -ForegroundColor Green
 	}

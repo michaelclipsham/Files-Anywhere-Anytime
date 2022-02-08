@@ -6,6 +6,7 @@
 . "$PSScriptRoot\spo-powershell-security.ps1"
 . "$PSScriptRoot\spo-powershell-site.ps1"
 . "$PSScriptRoot\spo-powershell-siteTemplate.ps1"
+. "$PSScriptRoot\catalog-sites.ps1"
 
 #-----------------------------------------------------
 # Load script configuration file
@@ -41,7 +42,7 @@ foreach ($keyValuePair in $(Get-Content $scriptConfigPath)){
 
 # Faculty Site Settings:
 ### COME BACK TO THIS GUY
-$provisioningUser = $user
+#$provisioningUser = $user
 $facultySiteInfo = @(
 	[PSCustomObject]@{Title = "Principal";         Url = "Principal" };
 	[PSCustomObject]@{Title = "Executive";         Url = "Executive" };
@@ -126,9 +127,8 @@ foreach ($row in $schoolsToProvisionFile) {
 		$facultySiteUrl = "$($SITEROOTURL)/$MANAGEDPATH/$schoolCode-$($facultySite.Url)"
 		$facultySiteTitle = "$($schoolShortName)-$($facultySite.Title)"
 		$facultySiteAlias = "$schoolCode-$($facultySite.Url)"
-		$facultySiteStorageQuota = $SITESTORAGEQUOTAMB
 		if ([System.Convert]::ToBoolean($RUNCREATEFACULTYSITECOLLECTION)){
-			CreateFacultySiteCollection -SiteUrl $facultySiteUrl -SiteTitle $facultySiteTitle -SiteOwner $PROVISIONINGUSER -TeamSiteAlias $facultySiteAlias -FacultySiteTemplate $FACULTYSITETEMPLATE -StorageQuota $facultySiteStorageQuota
+			CreateFacultySiteCollection -SiteUrl $facultySiteUrl -SiteTitle $facultySiteTitle -SiteOwner $PROVISIONINGUSER -TeamSiteAlias $facultySiteAlias -FacultySiteTemplate $FACULTYSITETEMPLATE -FacultyStorageQuota $SITESTORAGEQUOTAMB
 		}
 		$facultySiteUrls.Add($facultySite.Title, $facultySiteUrl);
 	}
@@ -151,13 +151,14 @@ foreach ($row in $schoolsToProvisionFile) {
 		$facultySiteUrl = "$($SITEROOTURL)/$MANAGEDPATH/$schoolCode-$($facultySite.Url)"
 		$facultySiteTitle = "$($schoolShortName)-$($facultySite.Title)"
 		$facultySiteAlias = "$schoolCode-$($facultySite.Url)"
-		ProvisionFacultySiteCollection -SiteUrl $facultySiteUrl -SiteTitle $facultySiteTitle -SiteOwner $PROVISIONINGUSER -TeamSiteAlias $facultySiteAlias -SiteDesign $siteDesign
+		ProvisionFacultySiteCollection -SiteUrl $facultySiteUrl -SiteTitle $facultySiteTitle -SiteOwner $PROVISIONINGUSER -TeamSiteAlias $facultySiteAlias -SiteDesign $siteDesign -SchoolCode $schoolCode -SchoolShortName $schoolShortName
 	}
 
 	# Change owner, revoke SharePoint administrator access
 	foreach ($facultySite in $facultySiteInfo) {
 		$schoolPrincipalADGroupMail = "~SCH"+$schoolCode+"SP@det.nsw.edu.au"
-		SetSiteCollectionOwner -SiteUrl $facultySite -OwnerUPN $schoolPrincipalADGroupMail 
+		$facultySiteUrl = "$($SITEROOTURL)/$MANAGEDPATH/$schoolCode-$($facultySite.Url)"
+		SetSiteCollectionOwner -SiteUrl $facultySiteUrl -OwnerUPN $schoolPrincipalADGroupMail 
 	}
 	
 	AddAuditLog -RunId $runId -shortName $schoolShortName -code $schoolCode -eventMessage "Provisioning Run Completed"

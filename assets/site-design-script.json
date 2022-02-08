@@ -9,7 +9,7 @@
         {
             "verb": "setSiteBranding",
             "navigationLayout": "Cascade",
-            "headerLayout": "Standard",
+            "headerLayout": "Compact",
             "headerBackground": "None",
             "showFooter": false
         }
