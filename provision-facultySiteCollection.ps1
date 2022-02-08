@@ -49,10 +49,10 @@ function ProvisionFacultySiteCollection {
 		$TeamSiteAlias,
 		[Parameter(Mandatory)]
 		$SiteDesign,
-		[Param(Mandatory)]
+		[Parameter(Mandatory)]
 		[String]
 		$SchoolCode,
-		[Param(Mandatory)]
+		[Parameter(Mandatory)]
 		[String]
 		$SchoolShortName
 	)
