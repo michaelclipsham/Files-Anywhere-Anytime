@@ -88,18 +88,18 @@ function ProvisionSiteCollectionAdmins() {
 		$SiteUrl,
 		[Parameter(Mandatory)]
 		[String]
-		$SamAccountName
+		$GroupDisplayName
 	)
 
 	try {
 		# Add Site Collection Admins
-		$adGroup = GetADSecurityGroup -DisplayName $SamAccountName
+		$adGroup = GetADSecurityGroup -DisplayName $GroupDisplayName
 		$loginName = "c:0t`.c`|tenant`|$($adGroup.LoginName)"
 		Set-SPOUser -Site $SiteUrl -LoginName $loginName -IsSiteCollectionAdmin $true
-		Write-Host "Added '$($SamAccountName)' as a Site Collection Administrator"
+		Write-Host "Added '$($GroupDisplayName)' as a Site Collection Administrator"
 	}
 	catch { 
-		Write-Warning "Adding '$($SamAccountName)' as a Site Collection Administrator failed. Error: $($Error[0])"
+		Write-Warning "Adding '$($GroupDisplayName)' as a Site Collection Administrator failed. Error: $($Error[0])"
 	}
 }
 
@@ -152,13 +152,13 @@ function SetSiteCollectionOwner() {
 		$SiteUrl,
 		[Parameter(Mandatory)]
 		[String]
-		$OwnerUPN
+		$OwnerClaim
 	)
 
 	try {
-		Set-SPOSite -Identity $SiteUrl -Owner $OwnerUPN
+		Set-SPOSite -Identity $SiteUrl -Owner $OwnerClaim
 	}
 	catch {
-		Write-Warning "Adding '$($OwnerUPN)' as Site Collection Owner failed. Error: $($Error[0])"
+		Write-Warning "Adding '$($OwnerClaim)' as Site Collection Owner failed. Error: $($Error[0])"
 	}
 }
