@@ -41,8 +41,6 @@ foreach ($keyValuePair in $(Get-Content $scriptConfigPath)){
 }
 
 # Faculty Site Settings:
-### COME BACK TO THIS GUY
-#$provisioningUser = $user
 $facultySiteInfo = @(
 	[PSCustomObject]@{Title = "Principal";         Url = "Principal" };
 	[PSCustomObject]@{Title = "Executive";         Url = "Executive" };
@@ -152,6 +150,7 @@ foreach ($row in $schoolsToProvisionFile) {
 		$facultySiteTitle = "$($schoolShortName)-$($facultySite.Title)"
 		$facultySiteAlias = "$schoolCode-$($facultySite.Url)"
 		ProvisionFacultySiteCollection -SiteUrl $facultySiteUrl -SiteTitle $facultySiteTitle -SiteOwner $PROVISIONINGUSER -TeamSiteAlias $facultySiteAlias -SiteDesign $siteDesign -SchoolCode $schoolCode -SchoolShortName $schoolShortName
+		ConfigureDefaultDocumentLibrary -SiteUrl $facultySiteUrl -DocumentLibraryName $facultySite.Title -SchoolShortName $schoolShortName
 	}
 
 	# Change owner, revoke SharePoint administrator access

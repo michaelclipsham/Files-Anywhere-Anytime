@@ -148,3 +148,42 @@ function ProvisionFacultySiteCollection {
 		Write-Warning $_.Exception.ToString() 
 	}
 }
+
+#-----------------------------------------------------
+# Configure faculty document library for UX naming conventions
+#-----------------------------------------------------
+function ConfigureDefaultDocumentLibrary {
+	param(
+		[Parameter(Mandatory)]
+		[String]
+		$SiteUrl,
+		[Parameter(Mandatory)]
+		[String]
+		$DocumentLibraryName,
+		[Parameter(Mandatory)]
+		[String]
+		$SchoolShortName
+	)
+
+	$siteScriptContent = @{}
+	$siteScriptContent.Add("`$schema", "https://developer.microsoft.com/json-schemas/sp/site-design-script-actions.schema.json")
+	$verbs = @()
+	$verb = @{}
+	$verb.Add("verb", "setTitle")
+	$verb.Add("title", $DocumentLibraryName)
+	$verbs += $verb
+	$siteScriptContent.Add("actions", $verbs)
+	$siteScriptContent.Add("version", 1)
+	
+	Write-Host "Adding site script and design to rename default document library on $SchoolShortName to $DocumentLibraryName"
+	$siteScript = $siteScriptContent | Add-SPOSiteScript -Title $( $SchoolShortName + " Document library rename site script" )
+	$siteDesign = Add-SPOSiteDesign -Title $( $SchoolShortName + " Document library rename site design" ) -WebTemplate "1" -SiteScripts $siteScript.Id -Description "Renames default document library"
+	Invoke-SPOSiteDesign -Identity $siteDesign -WebUrl $SiteUrl
+	Write-Host "Invoked site design to rename default document library, pausing for design to be applied..."
+
+	Start-Sleep -Seconds 5
+	Write-Host "Removing site script and design to rename default document library"
+	Remove-SPOSiteDesign -Identity $siteDesign.Id
+	Remove-SPOSiteScript -Identity $siteScript.Id
+	Write-Host "Completed renaming default document library"
+}
