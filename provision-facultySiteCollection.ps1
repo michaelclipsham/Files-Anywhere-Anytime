@@ -54,7 +54,10 @@ function ProvisionFacultySiteCollection {
 		$SchoolCode,
 		[Parameter(Mandatory)]
 		[String]
-		$SchoolShortName
+		$SchoolShortName,
+		[Parameter(Mandatory)]
+		[String]
+		$SiteType
 	)
 	try {
 		#Apply Site Design
@@ -78,28 +81,28 @@ function ProvisionFacultySiteCollection {
 
 		# Add Security Groups to Site Groups
 		ProvisionSiteSecurityGroupMembers -SiteUrl $siteUrl -group $sgMembers -GroupDisplayName "Cloud Migration Project Support"
-		if ($facultySiteTitle -like "*Executive") {
+		if ($SiteType -like "*Executive") {
 			ProvisionSiteSecurityGroupMembers $siteUrl $sgMembers "~SCH$($schoolcode)SE"
 			ProvisionSiteSecurityGroupMembers $siteUrl $sgMembers "~SCH$($schoolcode)SP"
 			ProvisionSiteSecurityGroupMembers $siteUrl $sgMembers "~SCH$($schoolcode)DP"
 			ProvisionSiteSecurityGroupMembers $siteUrl $sgMembers "~SCH$($schoolcode)SRP"
 			ProvisionSiteSecurityGroupMembers $siteUrl $sgMembers "~SCH$($schoolcode)RSE"
 		}
-		elseif ($facultySiteTitle -like "*Principal") {
+		elseif ($SiteType -like "*Principal") {
 			ProvisionSiteSecurityGroupMembers $siteUrl $sgMembers "~SCH$($schoolcode)SP"
 			ProvisionSiteSecurityGroupMembers $siteUrl $sgMembers "~SCH$($schoolcode)SRP"
 		}
-		elseif ($facultySiteTitle -like "*Local1") {
+		elseif ($SiteType -like "*Local1") {
 			ProvisionSiteSecurityGroupMembers $siteUrl $sgMembers "~SCH$($schoolcode)SP"
 			ProvisionSiteSecurityGroupMembers $siteUrl $sgMembers "~SCH$($schoolcode)Local1"
 			ProvisionSiteSecurityGroupMembers $siteUrl $sgMembers "~SCH$($schoolcode)SRP"
 		}
-		elseif ($facultySiteTitle -like "*Local2") {
+		elseif ($SiteType -like "*Local2") {
 			ProvisionSiteSecurityGroupMembers $siteUrl $sgMembers "~SCH$($schoolcode)SP"
 			ProvisionSiteSecurityGroupMembers $siteUrl $sgMembers "~SCH$($schoolcode)Local2"
 			ProvisionSiteSecurityGroupMembers $siteUrl $sgMembers "~SCH$($schoolcode)SRP"
 		}
-		elseif ($facultySiteTitle -like "*Office") {
+		elseif ($SiteType -like "*Office") {
 			ProvisionSiteSecurityGroupMembers $siteUrl $sgMembers "~SCH$($schoolcode)SP"
 			ProvisionSiteSecurityGroupMembers $siteUrl $sgMembers "~SCH$($schoolcode)Office"
 			ProvisionSiteSecurityGroupMembers $siteUrl $sgMembers "~SCH$($schoolcode)DP"
@@ -107,7 +110,7 @@ function ProvisionFacultySiteCollection {
 			ProvisionSiteSecurityGroupMembers $siteUrl $sgMembers "~SCH$($schoolcode)RSE"
 			ProvisionSiteSecurityGroupMembers $siteUrl $sgMembers "~SCH$($schoolcode)SE"
 		}
-		elseif ($facultySiteTitle -like "*School Assistance") {
+		elseif ($SiteType -like "*School Assistance") {
 			ProvisionSiteSecurityGroupMembers $siteUrl $sgMembers "~SCH$($schoolcode)SP"
 			ProvisionSiteSecurityGroupMembers $siteUrl $sgMembers "~SCH$($schoolcode)Office"
 			ProvisionSiteSecurityGroupMembers $siteUrl $sgMembers "~SCH$($schoolcode)DP"
@@ -117,7 +120,7 @@ function ProvisionFacultySiteCollection {
 			ProvisionSiteSecurityGroupMembers $siteUrl $sgMembers "~SCH$($schoolcode)SRP"
 			ProvisionSiteSecurityGroupMembers $siteUrl $sgMembers "~SCH$($schoolcode)RSE"
 		}
-		elseif ($facultySiteTitle -like "*Staff Information") {
+		elseif ($SiteType -like "*Staff Information") {
 			ProvisionSiteSecurityGroupMembers $siteUrl $sgMembers "~SCH$($schoolcode)SP"
 			ProvisionSiteSecurityGroupMembers $siteUrl $sgMembers "~SCH$($schoolcode)Office"
 			ProvisionSiteSecurityGroupMembers $siteUrl $sgMembers "~SCH$($schoolcode)DP"
@@ -126,7 +129,7 @@ function ProvisionFacultySiteCollection {
 			ProvisionSiteSecurityGroupMembers $siteUrl $sgMembers "~SCH$($schoolcode)SRP"
 			ProvisionSiteSecurityGroupMembers $siteUrl $sgMembers "~SCH$($schoolcode)RSE"
 		}
-		elseif ($facultySiteTitle -like "*Teacher") {
+		elseif ($SiteType -like "*Teacher") {
 			ProvisionSiteSecurityGroupMembers $siteUrl $sgMembers "~SCH$($schoolcode)SP"
 			ProvisionSiteSecurityGroupMembers $siteUrl $sgMembers "~SCH$($schoolcode)All"
 			ProvisionSiteSecurityGroupMembers $siteUrl $sgMembers "~SCH$($schoolcode)SRP"
@@ -165,18 +168,28 @@ function ConfigureDefaultDocumentLibrary {
 		$SchoolShortName
 	)
 
-	$siteScriptContent = @{}
+	$siteScriptContent = @{} ##dictionary
 	$siteScriptContent.Add("`$schema", "https://developer.microsoft.com/json-schemas/sp/site-design-script-actions.schema.json")
-	$verbs = @()
-	$verb = @{}
-	$verb.Add("verb", "setTitle")
-	$verb.Add("title", $DocumentLibraryName)
-	$verbs += $verb
-	$siteScriptContent.Add("actions", $verbs)
+	$actions = @() ##array
+	$action = @{}
+	$action.Add("verb", "createSPList")
+	$action.Add("listName", "Documents")
+	$action.Add("templateType", 101) ## 101 = Document Library
+
+	$subactions = @()
+	$subaction = @{}
+	$subaction.Add("verb", "setTitle")
+	$subaction.Add("title", $DocumentLibraryName)
+	$subactions += $subaction
+	$action.Add("subactions", $subactions)
+
+	$actions += $action
+	
+	$siteScriptContent.Add("actions", $actions)
 	$siteScriptContent.Add("version", 1)
 	
 	Write-Host "Adding site script and design to rename default document library on $SchoolShortName to $DocumentLibraryName"
-	$siteScript = $siteScriptContent | Add-SPOSiteScript -Title $( $SchoolShortName + " Document library rename site script" )
+	$siteScript = $siteScriptContent | ConvertTo-Json -Depth 4 | Add-SPOSiteScript -Title $( $SchoolShortName + " Document library rename site script" )
 	$siteDesign = Add-SPOSiteDesign -Title $( $SchoolShortName + " Document library rename site design" ) -WebTemplate "1" -SiteScripts $siteScript.Id -Description "Renames default document library"
 	Invoke-SPOSiteDesign -Identity $siteDesign -WebUrl $SiteUrl
 	Write-Host "Invoked site design to rename default document library, pausing for design to be applied..."

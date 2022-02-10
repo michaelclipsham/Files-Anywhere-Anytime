@@ -117,15 +117,15 @@ foreach ($row in $schoolsToProvisionFile) {
 	$schoolShortName = $row."School Short Name";
 	$schoolCode = $row."School Code";
 	$facultySiteUrls = @{}
-	
+	$facultySiteTitle = $schoolCode ###"$($schoolShortName)-$($facultySite.Title)"
+	$facultySiteAlias = "$schoolCode-$($facultySite.Url)"
+
 	AddAuditLog -RunId $runId -shortName $schoolShortName -code $schoolCode -eventMessage "Provisioning Run Started"
 
 	# Create Site Collections
 	foreach ($facultySite in $facultySiteInfo) {
-		$facultySiteUrl = "$($SITEROOTURL)/$MANAGEDPATH/$schoolCode-$($facultySite.Url)"
-		$facultySiteTitle = "$($schoolShortName)-$($facultySite.Title)"
-		$facultySiteAlias = "$schoolCode-$($facultySite.Url)"
 		if ([System.Convert]::ToBoolean($RUNCREATEFACULTYSITECOLLECTION)){
+			$facultySiteUrl = "$($SITEROOTURL)/$MANAGEDPATH/$schoolCode-$($facultySite.Url)"
 			CreateFacultySiteCollection -SiteUrl $facultySiteUrl -SiteTitle $facultySiteTitle -SiteOwner $PROVISIONINGUSER -TeamSiteAlias $facultySiteAlias -FacultySiteTemplate $FACULTYSITETEMPLATE -FacultyStorageQuota $SITESTORAGEQUOTAMB
 		}
 		$facultySiteUrls.Add($facultySite.Title, $facultySiteUrl);
@@ -147,9 +147,7 @@ foreach ($row in $schoolsToProvisionFile) {
 	# Provision Site Collections - site design and permissions
 	foreach ($facultySite in $facultySiteInfo) {
 		$facultySiteUrl = "$($SITEROOTURL)/$MANAGEDPATH/$schoolCode-$($facultySite.Url)"
-		$facultySiteTitle = "$($schoolShortName)-$($facultySite.Title)"
-		$facultySiteAlias = "$schoolCode-$($facultySite.Url)"
-		ProvisionFacultySiteCollection -SiteUrl $facultySiteUrl -SiteTitle $facultySiteTitle -SiteOwner $PROVISIONINGUSER -TeamSiteAlias $facultySiteAlias -SiteDesign $siteDesign -SchoolCode $schoolCode -SchoolShortName $schoolShortName
+		ProvisionFacultySiteCollection -SiteUrl $facultySiteUrl -SiteTitle $facultySiteTitle -SiteOwner $PROVISIONINGUSER -TeamSiteAlias $facultySiteAlias -SiteDesign $siteDesign -SchoolCode $schoolCode -SchoolShortName $schoolShortName -SiteType $facultySite.Title
 		ConfigureDefaultDocumentLibrary -SiteUrl $facultySiteUrl -DocumentLibraryName $facultySite.Title -SchoolShortName $schoolShortName
 	}
 

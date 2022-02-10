@@ -93,7 +93,7 @@ function ProvisionSiteCollectionAdmins() {
 
 	try {
 		# Add Site Collection Admins
-		$adGroup = GetADSecurityGroup -DisplayName $GroupDisplayName
+		$adGroup = GetADSecurityGroup -DisplayName $GroupDisplayName -SiteUrl $SiteUrl
 		$loginName = "c:0t`.c`|tenant`|$($adGroup.LoginName)"
 		Set-SPOUser -Site $SiteUrl -LoginName $loginName -IsSiteCollectionAdmin $true
 		Write-Host "Added '$($GroupDisplayName)' as a Site Collection Administrator"
@@ -107,7 +107,10 @@ function GetADSecurityGroup() {
 	param(
 		[Parameter(Mandatory)]
 		[String]
-		$DisplayName
+		$DisplayName,
+		[Parameter(Mandatory)]
+		[String]
+		$SiteUrl
 	)
 
 	try {
@@ -182,7 +185,7 @@ function RevokeFacultySiteCollectionPermission () {
 	
 	try {
 		if ($IsGroup) {
-			$adGroup = GetADSecurityGroup -DisplayName $IdentityClaim
+			$adGroup = GetADSecurityGroup -DisplayName $IdentityClaim -SiteUrl $SiteUrl
 			$loginName = "c:0t`.c`|tenant`|$($adGroup.LoginName)"
 			Remove-SPOUser -Site $SiteUrl -LoginName $loginName -Group $Group
 		}
