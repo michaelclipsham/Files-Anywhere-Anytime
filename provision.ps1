@@ -7,6 +7,7 @@
 . "$PSScriptRoot\spo-powershell-site.ps1"
 . "$PSScriptRoot\spo-powershell-siteTemplate.ps1"
 . "$PSScriptRoot\catalog-sites.ps1"
+. "$PSScriptRoot\sitelogos.ps1"
 
 #-----------------------------------------------------
 # Load script configuration file
@@ -32,6 +33,7 @@
 	TENANTID=<Tenant GUID>
 	TENANTDOMAIN=<tenantname>.sharepoint.com
 	CATALOGLISTITEMTYPE=SP.Data.<CatalogListName>ListItem
+	LOGOSFOLDERPATH=\assets\FAAicons
  ### Optional:
  	SITEDESIGNID=<Site Design GUID>
 ####>
@@ -58,6 +60,7 @@ $facultySiteUrls = @{}
 #-----------------------------------------------------
 $JSONScriptPath = Join-Path $PSScriptRoot $SITEDESIGNSCRIPTPATH
 $csvFilePath = Join-Path $PSScriptRoot $SCHOOLSTOPROVISIONCSVPATH
+$logosFolderPath = Join-Path $PSScriptRoot $LOGOSFOLDERPATH
 
 #-----------------------------------------------------
 # Logging
@@ -78,6 +81,7 @@ Write-Host "Start - Provisioning Site Collection" -ForegroundColor Green
 $runId = New-Guid
 Write-Host "Run Id - ($runId)"
 
+Write-Host "Connecting to SPO PowerShell module"
 ConnectSPOOnlineTenant -SiteTenantUrl $SITETENANTURL -UseMultiFactorAuth ([System.Convert]::ToBoolean($USEMULTIFACTORAUTH))
 
 # Create Site Template
@@ -107,7 +111,24 @@ for ($i = 0; $i -lt $csvFileHeaders.Count; $i++) {
 }
 
 # Validate content of CSV file rows
-# TODO
+### School Short Name to have one of the following suffix
+### PS
+### HS
+### Central School
+### Community School
+### Others may be added later
+foreach ($row in $schoolsToProvisionFile) {
+	$schoolShortName = $row."School Short Name";
+	if (-not
+		($schoolShortName -like "*PS"             -or
+		$schoolShortName -like "*HS"              -or
+		$schoolShortName -like "*Central School"  -or
+		$schoolShortName -like "*Community School"
+		)
+	) {
+		Write-Error "The csv file contains an invalid school short name - " $schoolShortName
+	}
+}
 #endregion
 
 $schoolsToProvisionFile = Import-Csv -Path $csvFilePath
@@ -144,11 +165,12 @@ foreach ($row in $schoolsToProvisionFile) {
 		-CatalogListName $CATALOGLISTNAME `
 		-CatalogListItemType $CATALOGLISTITEMTYPE
 
-	# Provision Site Collections - site design and permissions
+	# Provision Site Collections - site design, permissions, default document library, and logo
 	foreach ($facultySite in $facultySiteInfo) {
 		$facultySiteUrl = "$($SITEROOTURL)/$MANAGEDPATH/$schoolCode-$($facultySite.Url)"
 		ProvisionFacultySiteCollection -SiteUrl $facultySiteUrl -SiteTitle $facultySiteTitle -SiteOwner $PROVISIONINGUSER -TeamSiteAlias $facultySiteAlias -SiteDesign $siteDesign -SchoolCode $schoolCode -SchoolShortName $schoolShortName -SiteType $facultySite.Title
 		ConfigureDefaultDocumentLibrary -SiteUrl $facultySiteUrl -DocumentLibraryName $facultySite.Title -SchoolShortName $schoolShortName
+		UploadSetSiteLogo -SiteUrl $facultySiteUrl -SiteRole $facultySite.Url -LogoFolderPath $logosFolderPath
 	}
 
 	# Change owner, revoke SharePoint administrator access
